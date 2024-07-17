@@ -1,0 +1,43 @@
+/* fin_eye.css */
+
+/* reset */
+body, h1, h2, h3, h4, ul {
+    margin: 0;
+    padding: 0;
+}
+
+ul, li {
+    list-style-type: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* setting */
+body {
+    background-color: #111;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+p{ color: #999; }
+
+.div-forex {
+    background-color: bisque;
+    width: 100%;
+    overflow-x: auto;
+}
+.chart-container {
+    width: 100%;
+    overflow-x: auto; /* 가로 스크롤바 생성 */
+}
+#forex-chart{
+    width: 2000px;
+    height: 400px;
+}
+
+
+
+
+

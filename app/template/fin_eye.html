@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Fin Eye</title>
+    <!-- <link rel='stylesheet' href='static/css/fin_eye.css'> -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.1.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <style>
+        /* reset */
+        body, h1, h2, h3, h4, ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        ul, li {
+            list-style-type: none;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        /* setting */
+        body {
+            background-color: #111;
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+
+        p { color: #999; }
+
+        .div-forex {
+            background-color: bisque;
+            width: 100%;
+        }
+
+        #forex-chart {
+            
+        }
+
+    </style>
+</head>
+<body>
+    {% include 'navigation_bar.html' %}
+    
+    <div class="div-forex">
+        <h3>forex</h3>
+        <canvas id="forex-chart"></canvas>
+    </div>
+
+    <div class="div-index">
+        <h3>index</h3>
+    </div>
+    <button id="btn_1">btn</button>
+
+    <script>
+
+        document.getElementById("btn_1").addEventListener(
+            "click",
+            ()=>{
+                console.log("버튼 눌림!")
+                fetch("/fin_eye/get_index")
+                .then(resp=>resp.json())
+                .then(data=>console.log(data))
+                .catch(error => console.error("버튼 오류: ", error));
+
+            }
+        )
+
+
+
+
+        window.onload = function() {
+            console.log("페이지 로드 완료");
+            // forex 
+            fetch("/fin_eye/get_forex6")
+            .then(resp => resp.json())
+            .then(data => drawChart(data.data))
+            .catch(error => console.error("차트 데이터 로드 오류: ", error));
+
+            // index
+            
+        };
+
+        function drawChart(data) {
+            const colorMapping = {
+                'EURUSD': 'blue',
+                'CHYUSD': 'red',
+                'INRUSD': 'orange',
+                'RUBUSD': 'gray',
+                'JPYUSD': 'yellow',
+                'KRWUSD': 'green'
+            };
+
+            const pairs = ['EURUSD', 'CHYUSD', 'INRUSD', 'RUBUSD', 'JPYUSD', 'KRWUSD'];
+
+            const datasets = pairs.map(pair => {
+                const filteredData = data.filter(item => item.pair === pair);
+                return {
+                    label: `${pair}`,
+                    data: filteredData.map(item => ({x: item.date, y: item.rate})),
+                    borderColor: colorMapping[pair],
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    fill: false
+                };
+            });
+
+            const ctx = document.getElementById('forex-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                tooltipFormat: 'yyyy/MM', // 툴팁에서 연도/달만 표시
+                                displayFormats: {
+                                    day: 'yyyy/MM' // 축에 연도/달만 표시
+                                }
+                            },
+                            ticks:{
+                                maxTicksLimit: 10,
+                                autoSkip:true
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                borderColor: 'black', // x축과 y축의 색상을 검정색으로 설정
+                                borderWidth: 2, // x축과 y축의 두께를 2픽셀로 설정
+                                lineWidth: (context) => (context.tick.value === 0 ? 3 : 1), // y축의 0 위치에 굵은 선을 그립니다.
+                                color: (context) => (context.tick.value === 0 ? 'black' : 'rgba(0,0,0,0.1)') // y축의 0 위치에 검은색 선을 그립니다.
+                            }
+                        }
+                    },
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x'
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x',
+                                speed: 0.1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
